@@ -15,6 +15,8 @@ head(tags, 7)
 
 # Test my popularity vs similar artists ----
 similar_artists %>%
+  drop_na() %>%
+  filter(similar %in% general_info$name) %>%
   left_join(general_info, by = c("similar" = "name")) %>%
   select(-listeners, -rank) %>%
   group_by(artist) %>%
