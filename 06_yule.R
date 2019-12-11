@@ -15,7 +15,6 @@ snowball_prob <- 0.8
 N_AGENTS <- 10000
 N_ARTISTS <- 1000
 
-
 generate_yule <- function(snowball_prob = 0.5, N_AGENTS = 1000, N_ARTISTS = 1000){
   artists_views <- rep(0, N_ARTISTS)
   
@@ -33,6 +32,8 @@ generate_yule <- function(snowball_prob = 0.5, N_AGENTS = 1000, N_ARTISTS = 1000
       # Model snowball effect - probability to choose artist proportional to previous choices
       artist_chosen <-
         sample.int(N_ARTISTS, size = 1, prob = artists_views)
+      artist_chosen_list[i] <<- artist_chosen
+      
       artists_views[artist_chosen] <-
         artists_views[artist_chosen] + 1
       
@@ -118,7 +119,15 @@ qqplot(general_info$playcount, qYULE(ppoints(100000)))
 # Comparison of simulation and empirical
 
 a <- b
+artist_chosen_list <- vector("numeric", N_AGENTS)
 a <- generate_yule(snowball_prob = 0.8, N_AGENTS = 100000, N_ARTISTS = 9998)
+
+t <- tibble(a, idx = 1:9998)
+t %>%
+  arrange(desc(a)) %>%
+  head(10) %>%
+  .$idx -> top_artists
+
 
 
 ecdf_comparison <- tibble(

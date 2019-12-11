@@ -1,0 +1,68 @@
+Experiments:
+
+#### Yule distribution testing
+
+Steps:
+- Fit yule distribution to empirical playcount data using MLE
+- Compare two distributions obtained using Kolmorogov-Smirnov test (or other similar for equality of distributions)
+
+
+Alternative approach using snowball stochastic process underlying Yule distribution:
+- Create N (for now 100000) agents
+- For each agent choose one of the following (with probabilities p and 1-p):
+  - Choose random artist, with probability of chosing particular artist proportional to number of previous choices of this artist
+  - Choose random artist (without weighting)
+- Again, compare 2 distributions using K-S test
+
+Clarifications:
+For p = 1 we obtain first chosen artist getting all of the views
+For p = 0 we obtain uniform distribution of views
+  
+  
+  
+#### Random walk on the graph testing
+
+This is to test whether a structure of the graph of the similarities between artists (from last.fm engine) is a sufficient factor to obtain superstardom effect.
+
+Intuition - on average, similar artist to the one inspected have higher playcount than his. 
+
+Steps:
+- Create N_AGENTS agents 
+- Assign each agent to a random artist
+- For N_STEPS steps:
+  - Move each agent to an artist similar to previously listened one
+- Check playcount distribution and compare to empirical one (K-S test again)
+
+Intuitively N should be very high and M very low to resemble reality
+
+For:
+N_AGENTS = 100000
+N_STEPS = 1000
+it is evolving into right pattern very slowly
+nothing visible happens
+
+For:
+N_AGENTS = 100
+N_STEPS = 1000000
+We get massive playcounts for superstars (closer to empirical dist, but still far). However this is not a real case.
+
+Ideas for the next experiments:
+
+Combine snowball process with random walk on a graph:
+
+In standard snowball process there is a popularity part and purely random part. Idea is to replace completely random part with choice according to preferences. So, an agent chooses between choosing according to popularity of the artist, and walking along the graph edges to similar artists to listened previously.
+
+
+Test role of talent - for example create a population of artists with talent from normal dist, create agents and 
+
+
+
+Dataset:
+- Artist name
+- Play count
+- Listeners count
+- names of 5 similar artists
+  
+  
+  
+  
