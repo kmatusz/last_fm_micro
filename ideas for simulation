@@ -5,6 +5,9 @@ Porównałem dystrybucję agentów na sieci do dystrybucji liczby odtworzeń.
 
 Symulacja nie zbiegała do oczekiwanego rozkładu 
 
+
+Zrobiłem też symulacje procesu z którego wychodzi rozkład yule'a. Na pierwszy rzut oka daje podobny rozkład, ale mijają się całkiem sporo
+
 Pomysły:
 - Sprawdzić Yule distribution - po prostu dopasować do danych o wyświetleniach artystów które mamy
 - Do obu założeń Yule distribution dodać 3 - w każdym kroku z pewnym prawdopodobieństwem przenieść agenta 

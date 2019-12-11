@@ -77,3 +77,12 @@ results_df %>%
   group_by(step) %>%
   summarise(median_playcount = median(playcount, na.rm = T)) %>% 
   plot()
+
+
+
+
+# histogram after filtering 0
+general_info %>%
+  # filter(playcount >0)
+  ggplot(aes(playcount)) +
+  stat_ecdf()
