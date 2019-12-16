@@ -79,10 +79,57 @@ results_df %>%
   plot()
 
 
-
-
 # histogram after filtering 0
 general_info %>%
   # filter(playcount >0)
   ggplot(aes(playcount)) +
   stat_ecdf()
+
+
+# Snowball with graph ----
+# Steps:
+# 1. For each agent select initial artist to go to weighted by playcount
+# 2. Save obtained distribution
+# 3. Same as snowball - with some p go to random artist (weighted by playcount from simulation)
+#    With 1-p go to similar artist as before
+# For p = 0 only similar
+
+similar_graph
+
+set.seed(10)
+random_artist <- sample(general_info$name, 1, prob = general_info$playcount)
+
+V(similar_graph)[random_artist]
+random_artist
+
+a <- igraph::neighbors(graph = similar_graph, 
+                  v = V(similar_graph)[random_artist],
+                  mode = "out")
+
+sample(a,1)
+
+# Parameters of execution
+no_agents <- 1000
+no_steps <- 100
+snowball_prob <- 0.5
+
+# setting up variables
+agent_ids <- 1:no_agents
+last_visited <- rep("", no_agents)
+names(last_visited) <- agent_ids
+views_count <- vector("list", nrow(general_info))
+
+
+vertex_attr(similar_graph)$simulation_playcount[which(names(V(similar_graph)) == selected_artist)]
+
+vertex_attr(similar_graph)$simulation_playcount <- rep(0, length(V(similar_graph)))
+vertex_attr(similar_graph)$simulation_playcount
+
+# First run (weighted by previous playcount)
+
+selected_artists <- names(sample(V(similar_graph), size = no_agents, replace = TRUE , prob = vertex_attr(similar_graph)$playcount))
+selected_artists_id <- which(names(V(similar_graph)) == selected_artists)
+last_visited[[i]] <- selected_artist
+vertex_attr(similar_graph)$simulation_playcount[selected_artist_id] <- vertex_attr(similar_graph)$simulation_playcount[selected_artist_id] +1
+
+
