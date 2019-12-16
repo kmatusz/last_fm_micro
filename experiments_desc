@@ -64,5 +64,19 @@ Dataset:
 - names of 5 similar artists
   
   
+Obecny model Yule zakłada, że proces tworzenia się gwiazd jest kompletnie losowy. 
+Każdy albo wybiera losowo, albo popularne rzeczy (wybrane wcześniej losowo przez innych).
+I ten model pasuje do danych. Ale z tym modelem są problemy. 
+Po pierwsze, kiedy jakiś artysta zostanie "odkryty" wcześniej w procesie, automatycznie dostaje większe szanse na późniejszą popularność.
+A szanse na odkrycie wcześniej można modelować na przykład właśnie przez sugestie silników rekomendacyjnych, albo nierówności w talencie.
+Po drugie, model losowy jest trochę "nieelegancki" ;).
+Chcę sprawdzić czy da się zaobserwować czynniki, które nie są losowe a wyjaśniają dystrybucję równie dobrze.
+
+Ogólnie - mamy model który pasuje do danych, 
+ale chcemy sprawdzić czy istnieje inny model który równie dobrze pasuje, ale pozwala na lepsze przewidzenie sukcesu konkretnego artysty.
+
+  
+  
+  
   
   
