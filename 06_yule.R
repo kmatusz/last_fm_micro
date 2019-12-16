@@ -11,9 +11,7 @@ library(tidyverse)
 # snowball_prob - probability of getting into "popular" artist
 
 
-snowball_prob <- 0.8
-N_AGENTS <- 10000
-N_ARTISTS <- 1000
+
 
 generate_yule <- function(snowball_prob = 0.5, N_AGENTS = 1000, N_ARTISTS = 1000){
   artists_views <- rep(0, N_ARTISTS)
@@ -40,6 +38,7 @@ generate_yule <- function(snowball_prob = 0.5, N_AGENTS = 1000, N_ARTISTS = 1000
     } else{
       # Model random effect
       artist_chosen <- sample.int(N_ARTISTS, size = 1)
+      artist_chosen_list[i] <<- artist_chosen
       artists_views[artist_chosen] <-
         artists_views[artist_chosen] + 1
     }
@@ -50,7 +49,7 @@ generate_yule <- function(snowball_prob = 0.5, N_AGENTS = 1000, N_ARTISTS = 1000
 }
 
 
-
+# Manual creation ----
 artists_views <- rep(0, N_ARTISTS)
 
 # First agent
@@ -88,22 +87,23 @@ a %>% ggplot(aes(artists_views)) +
 
 
 # Testing yule distribution on last.fm dataset ----
+
+# Load data
 temp <- new.env()
 load("data/clean_datasets.Rdata", envir = temp)
 general_info <- temp$general_info
 rm(temp)
 
+# Fast plot
 general_info %>% ggplot(aes(playcount)) +
   geom_histogram(bins = 100)
 
-
-
-
+# Estimate yule params using mle
 mle_est <- ayulemle(general_info$playcount)
 mle_est
 ks.test(general_info$playcount, dYULE)
 
-
+# ks test testing
 a <- rnorm(10000)
 b <- rnorm(10000)#, mean = 10)
 ks.test(a,b)
@@ -111,22 +111,27 @@ ks.test(a,b)
 
 plot(ecdf(general_info$playcount))
 plot(dYULE)
-
 qqplot(general_info$playcount, qYULE(ppoints(100000)))
 
 
 
-# Comparison of simulation and empirical
+# Comparison of simulation and empirical ----
 
-a <- b
-artist_chosen_list <- vector("numeric", N_AGENTS)
-a <- generate_yule(snowball_prob = 0.8, N_AGENTS = 100000, N_ARTISTS = 9998)
+snowball_prob <- 0.95
+N_AGENTS <- 100000
+N_ARTISTS <- 100
 
-t <- tibble(a, idx = 1:9998)
-t %>%
-  arrange(desc(a)) %>%
-  head(10) %>%
-  .$idx -> top_artists
+# Params that fit well:
+# snowball_prob <- 0.95
+# N_AGENTS <- 100000
+# N_ARTISTS <- 10000
+
+artist_chosen_list <- vector("numeric", N_AGENTS) # Artist chosen in each run
+a <- generate_yule(snowball_prob = snowball_prob,
+                N_AGENTS = N_AGENTS,
+                N_ARTISTS = N_ARTISTS)
+
+hist(a)
 
 
 
@@ -142,7 +147,7 @@ ecdf_comparison %>%
 
 
 ggplot(ecdf_comparison, aes(x = value, color = type))+
-  stat_ecdf()# +
+  stat_ecdf() +
   xlim(c(0, 1.0e+06))
 
 
@@ -156,5 +161,26 @@ ecdf_comparison %>%
   summary()
 
 # quartiles don't match 
+
+# Test whether artist chosen at the beginning has higher chances ----
+
+snowball_prob <- 0.7
+N_AGENTS <- 100000
+N_ARTISTS <- 100
+
+artist_chosen_list <- vector("numeric", N_AGENTS) # Artist chosen in each run
+a <- generate_yule(snowball_prob = snowball_prob,
+                   N_AGENTS = N_AGENTS,
+                   N_ARTISTS = N_ARTISTS)
+
+
+artist_chosen_list %>% as.character() %>% table() %>%
+  as_tibble() %>%
+  arrange(-n)
+artist_chosen_list
+hist(a)
+
+# The bigger the snowball_prob, the more chance there is that most popular artist
+# Was chosen as first/second
 
 

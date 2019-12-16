@@ -33,7 +33,7 @@ Steps:
   - Move each agent to an artist similar to previously listened one
 - Check playcount distribution and compare to empirical one (K-S test again)
 
-Intuitively N should be very high and M very low to resemble reality
+Intuitively N_AGENTS should be very high and N_STEPS very low to resemble reality
 
 For:
 N_AGENTS = 100000
