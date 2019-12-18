@@ -109,7 +109,6 @@ snowball_prob <- 0.05
 
 # setting up variables
 last_visited <- rep("", no_agents)
-names(last_visited) <- 1:no_agents
 
 vertex_attr(similar_graph)$simulation_playcount <-
   rep(0, length(V(similar_graph)))
@@ -122,27 +121,43 @@ selected_artists <- names(sample(
   replace = TRUE #,
   #prob = vertex_attr(similar_graph)$playcount
 ))
-# selected_artists_mask <-
+# selected_artists_count <-
 #   names(V(similar_graph)) %in% selected_artists
 
-selected_artists %>% 
-  table() %>% 
-  as_tibble() %>% 
-  rename(artist = ".") -> selected_artists_freq
 
+playcounts_from_selected <- function(selected_artists, similar_graph){
+  selected_artists %>% 
+    table() %>% 
+    as_tibble() %>% 
+    rename(artist = ".") -> selected_artists_freq
+  
+  
+  enframe(names(V(similar_graph))) %>% 
+    left_join(selected_artists_freq, 
+              by = c("value" = "artist")) %>%
+    replace_na(list("n" = 0)) %>%
+    .$n
+}
 
-enframe(names(V(similar_graph))) %>% 
-  left_join(selected_artists_freq, 
-            by = c("value" = "artist")) %>%
-  replace_na(list("n" = 0)) %>%
-  .$n -> selected_artists_mask
+selected_artists_count <- playcounts_from_selected(selected_artists, similar_graph) 
+# selected_artists %>% 
+#   table() %>% 
+#   as_tibble() %>% 
+#   rename(artist = ".") -> selected_artists_freq
+# 
+# 
+# enframe(names(V(similar_graph))) %>% 
+#   left_join(selected_artists_freq, 
+#             by = c("value" = "artist")) %>%
+#   replace_na(list("n" = 0)) %>%
+#   .$n -> selected_artists_count
 
 last_visited <- selected_artists
 
 simulation_playcount_last_run <-
   vertex_attr(similar_graph)$simulation_playcount
 vertex_attr(similar_graph)$simulation_playcount <-
-  simulation_playcount_last_run + selected_artists_mask
+  simulation_playcount_last_run + selected_artists_count
 
 # vertex_attr(similar_graph)$simulation_playcount
 # last_visited
@@ -174,9 +189,10 @@ for (i in 1:no_steps) {
               by = c("value" = "artist")) %>%
     group_by(id) %>%
     sample_n(1) %>%
-    ungroup() -> sampled_from_graph
+    ungroup() %>%
+    .$similar -> sampled_from_graph
   
-  selected_artists_similar <- sampled_from_graph$similar
+  selected_artists_similar <- sampled_from_graph
   
   # Use snowball or similar approach for each agent
   use_similar <- sample(
@@ -207,8 +223,6 @@ for (i in 1:no_steps) {
            selected_artists_snowball)
   
   # Add new playcounts to graph
-  # selected_artists_mask <-
-  #   names(V(similar_graph)) %in% selected_artists
   selected_artists %>% 
     table() %>% 
     as_tibble() %>% 
@@ -219,7 +233,7 @@ for (i in 1:no_steps) {
     left_join(selected_artists_freq, 
               by = c("value" = "artist")) %>%
     replace_na(list("n" = 0)) %>%
-    .$n -> selected_artists_mask
+    .$n -> selected_artists_count
   
   
   last_visited <- selected_artists
@@ -227,7 +241,7 @@ for (i in 1:no_steps) {
   simulation_playcount_last_run <-
     vertex_attr(similar_graph)$simulation_playcount
   vertex_attr(similar_graph)$simulation_playcount <-
-    simulation_playcount_last_run + selected_artists_mask
+    simulation_playcount_last_run + selected_artists_count
   
   tibble(
     playcount = vertex_attr(similar_graph)$playcount,
@@ -262,13 +276,14 @@ tibble(
 
 
 
-# Results For initialising with real playcount:
-# 
-
+# Results For initialising with random:
 # no_agents <- 10000
 # no_steps <- 50
 # snowball_prob <- 0.05
 # Good fit
+
+
+
 
 # 50 steps enough to converge  
 # For just 0.05 prob of choosing popular we get results close to original data (without inputing this information)
