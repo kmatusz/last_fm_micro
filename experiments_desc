@@ -75,8 +75,30 @@ Chcę sprawdzić czy da się zaobserwować czynniki, które nie są losowe a wyj
 Ogólnie - mamy model który pasuje do danych, 
 ale chcemy sprawdzić czy istnieje inny model który równie dobrze pasuje, ale pozwala na lepsze przewidzenie sukcesu konkretnego artysty.
 
+#### Snowball on graph
+
+Setting:
+1. Wybierz początkową dystrybucję artystów pomiędzy agentów.
+2. W kolejnych krokach dla każdego agenta przejdź do popularnego artysty albo do podobnego po grafie. Jeżeli nie ma podobnego to wylosuj ze wszystkich.
+
+Zmienne do kontrolowania:
+
+- Liczba agentów
+- Liczba kroków
+- Prawdopodobieństwo wyboru pomiędzy popularnych i podobnych (snowball vs. similar)
+- Sposób inicjalizacji agentów - losowo albo ważone playcountem z prawdziwych danych
+
+Hipotezy do testowania:
+
+- Istnieje popularity bias w sieci artystów
+- Model z chodzeniem po sieci zamiast randoma jest lepszy od standardowego yule
+
+
+Co pokazywać:
+
+- Korelacja pomiędzy init a wynikami w kolejnych krokach
+- 
+
   
   
-  
-  
-  
+
