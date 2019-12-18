@@ -103,9 +103,9 @@ general_info %>%
 
 
 # Parameters of execution
-no_agents <- 1000
-no_steps <- 1000
-snowball_prob <- 0.5
+no_agents <- 10000
+no_steps <- 50
+snowball_prob <- 0.05
 
 # setting up variables
 last_visited <- rep("", no_agents)
@@ -119,11 +119,24 @@ vertex_attr(similar_graph)$simulation_playcount <-
 selected_artists <- names(sample(
   V(similar_graph),
   size = no_agents,
-  replace = TRUE ,
-  prob = vertex_attr(similar_graph)$playcount
+  replace = TRUE #,
+  #prob = vertex_attr(similar_graph)$playcount
 ))
-selected_artists_mask <-
-  names(V(similar_graph)) %in% selected_artists
+# selected_artists_mask <-
+#   names(V(similar_graph)) %in% selected_artists
+
+selected_artists %>% 
+  table() %>% 
+  as_tibble() %>% 
+  rename(artist = ".") -> selected_artists_freq
+
+
+enframe(names(V(similar_graph))) %>% 
+  left_join(selected_artists_freq, 
+            by = c("value" = "artist")) %>%
+  replace_na(list("n" = 0)) %>%
+  .$n -> selected_artists_mask
+
 last_visited <- selected_artists
 
 simulation_playcount_last_run <-
@@ -142,6 +155,8 @@ vertex_attr(similar_graph)$simulation_playcount <-
 
 # Main snowball ----
 for (i in 1:no_steps) {
+  # if(i %% 10 == 1) 
+    print(i)
   # artists for snowball
   selected_artists_snowball <- names(
     sample(
@@ -168,12 +183,23 @@ for (i in 1:no_steps) {
     c(TRUE, FALSE),
     size = no_agents,
     replace = T,
-    prob = c(snowball_prob, 1 - snowball_prob)
+    prob = c(1 - snowball_prob, snowball_prob)
   )
   
-  use_similar <-
-    ifelse(is.na(selected_artists_similar), FALSE, use_similar)
   
+  
+  # Roughly 10% of artists doesn't have similar artist - in this case choose random one
+  selected_artists_similar[is.na(selected_artists_similar)] <- names(
+    sample(
+      V(similar_graph),
+      size = 1,
+      replace = TRUE
+    )
+  )
+  
+  # use_similar <-
+  #   ifelse(is.na(selected_artists_similar), FALSE, use_similar)
+    
   # Merge snowball and similar vectors
   selected_artists <-
     ifelse(use_similar,
@@ -181,8 +207,21 @@ for (i in 1:no_steps) {
            selected_artists_snowball)
   
   # Add new playcounts to graph
-  selected_artists_mask <-
-    names(V(similar_graph)) %in% selected_artists
+  # selected_artists_mask <-
+  #   names(V(similar_graph)) %in% selected_artists
+  selected_artists %>% 
+    table() %>% 
+    as_tibble() %>% 
+    rename(artist = ".") -> selected_artists_freq
+  
+  
+  enframe(names(V(similar_graph))) %>% 
+    left_join(selected_artists_freq, 
+              by = c("value" = "artist")) %>%
+    replace_na(list("n" = 0)) %>%
+    .$n -> selected_artists_mask
+  
+  
   last_visited <- selected_artists
   
   simulation_playcount_last_run <-
@@ -190,41 +229,54 @@ for (i in 1:no_steps) {
   vertex_attr(similar_graph)$simulation_playcount <-
     simulation_playcount_last_run + selected_artists_mask
   
+  tibble(
+    playcount = vertex_attr(similar_graph)$playcount,
+    simulation_playcount = vertex_attr(similar_graph)$simulation_playcount
+  ) %>% 
+    cor() %>%
+    print()
+  
 }
 
-# selected_artists_similar <- rep("", no_agents)
-#
-# for (i in 1:no_agents){
-#   print(i)
-#   neighbors <- igraph::neighbors(similar_graph, last_visited[i])
-#   if (length(neighbors) == 0){
-#     selected_artists_similar[i] <- ""
-#   } else {
-#     selected_artists_similar[i] <- sample(neighbors, 1)
-#   }
-# }
-# Soo slow - better using tibble
+tibble(
+  playcount = vertex_attr(similar_graph)$playcount,
+  simulation_playcount = vertex_attr(similar_graph)$simulation_playcount
+) %>% #cor()
+  ggplot(aes(playcount, simulation_playcount)) +
+  geom_point()
 
-# similar_graph <- igraph::graph_from_data_frame(similar_artists, vertices = general_info)
-last_visited
+# vertex_attr(similar_graph)
 
-last_visited %>%
-  enframe("id") %>%
-  left_join(similar_artists,
-            by = c("value" = "artist")) %>%
-  group_by(id) %>%
-  sample_n(1) %>%
-  ungroup() -> a
-
-selected_artists_similar <- a$similar
-last_visited
+tibble(
+  playcount = vertex_attr(similar_graph)$playcount,
+  simulation_playcount = vertex_attr(similar_graph)$simulation_playcount
+) %>% 
+  mutate(simulation_playcount = simulation_playcount*max(playcount)/max(simulation_playcount)) %>%
+  pivot_longer(1:2) %>%
+  ggplot(aes(value, color = name, fill = name)) +
+  # geom_density(alpha = 0.5) +
+  # xlim(c(0, 1.0e+04))
+  stat_ecdf()
 
 
 
 
-# Some places in igraph are stuck - no neighbors
-# Consider removing these
 
-last_visited[i]
+# Results For initialising with real playcount:
+# 
 
-igraph::neighbors(similar_graph, last_visited[18])
+# no_agents <- 10000
+# no_steps <- 50
+# snowball_prob <- 0.05
+# Good fit
+
+# 50 steps enough to converge  
+# For just 0.05 prob of choosing popular we get results close to original data (without inputing this information)
+
+
+# After 10 steps
+
+
+
+
+
