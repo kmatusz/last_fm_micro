@@ -1,0 +1,21 @@
+---
+title: "dataset_desc"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Dataset description
+
+The data used in this study was obtained using an open API provided by last.fm site. Last fm is a service in which users are able to record music played by them using different services, including Spotify, YouTube, Tidal and others.
+
+The study was restricted to artists with tag 'polish'. In total there are 17178 such artists. However, the API had restrictions, and thus data about 9998 artists was obtained. Avaliable informations about each artist used in the study are:
+
+- Artist name (artist)
+- Number of times particular artist was plazed by all users (playcount)
+- Names of 5 most similar artists. To obtain completeness of the graph, names of artists not avaliable in the dataset were completely excluded from the analysis.
+
+Names of similar artists were used to construct a directed graph of similarities between artists. 
+

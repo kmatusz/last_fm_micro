@@ -162,6 +162,12 @@ for (i in 1:length(params_to_test)){
 
 save(params_to_test, results_list, file = "data/simulation_results.Rdata")
 
+similar_graph <- do.call(run_simulation, list(no_agents = 10000,
+     no_steps = 50,
+     snowball_prob = 0.7,
+     similar_graph, 
+     similar_artists,
+     method = "similar"))[[1]]
 
 similar_graph <- results_list[[12]]
 tibble(
@@ -176,6 +182,3 @@ tibble(
   # xlim(c(0, 1.0e+06)) +
   # labs(title = params_title)
 
-# Formal assesment
-# 1. Plots
-# 2. K-S stat

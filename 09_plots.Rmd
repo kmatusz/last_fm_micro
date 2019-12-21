@@ -1,0 +1,38 @@
+---
+title: "plots_tables"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Load data
+```{r}
+library(gamlss.dist)
+library(tidyverse)
+library(igraph)
+library(fitdistrplus)
+
+load("data/simulation_results.Rdata")
+
+```
+
+
+
+#### Quantile-quantile plot
+
+#### Histogram for empirical data
+
+#### Summary of empirical data (table)
+
+#### Compare histogram of empirical and simulation
+
+#### Stats tests table
+
+MLE params, test statistic value and p-value
+
+
+#### qq plot with empirical vs pareto, yule and simulation
+
+#### gif of histograms from simulation
