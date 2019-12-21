@@ -176,3 +176,6 @@ tibble(
   # xlim(c(0, 1.0e+06)) +
   # labs(title = params_title)
 
+# Formal assesment
+# 1. Plots
+# 2. K-S stat
