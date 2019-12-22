@@ -2,43 +2,65 @@ library(gamlss.dist)
 library(tidyverse)
 library(igraph)
 library(fitdistrplus)
+# install.packages("kSamples")
 
 load("data/simulation_results.Rdata")
 
 similar_graph <- results_list[[1]]
 
+playcount <- vertex_attr(similar_graph)$playcount
+simulation_playcount <- vertex_attr(similar_graph)$simulation_playcount
+simulation_playcount_scaled <- simulation_playcount/max(simulation_playcount)*max(playcount)
+
 #### Fit yule
 mle_yule <-
   fitdistrplus::mledist(vertex_attr(similar_graph)$playcount,
                         "YULE",
-                        start = list("mu" = 10000))
+                        start = list("mu" = 1000))
 mle_yule$estimate # 1898.966 - słabo pasuje
+
+# simulation_yule <-
+#   rYULE(9998, mu = mle_yule$estimate)
+
 
 #### Quantile-quantile plot
 
-quantiles_simulation <- quantile(vertex_attr(similar_graph)$simulation_playcount, probs = seq(0,0.99,0.01))
-quantiles_empirical <- quantile(vertex_attr(similar_graph)$playcount, probs = seq(0,0.99,0.01))
-quantiles_yule <- qYULE(seq(0,0.99,0.01), mu = mle_yule$estimate)
+quantiles_simulation <- quantile(simulation_playcount, probs = seq(0,0.99,0.01))
+quantiles_simulation <- as.numeric(quantiles_simulation)
+quantiles_empirical <- quantile(playcount, probs = seq(0,0.99,0.01))
+quantiles_yule <- qYULE(seq(0,0.99,0.01), mu = 10000)
+# quantiles_yule <- quantiles_yule/max(quantiles_yule)*max(playcount)
 
-tibble(quantiles_empirical,
+tibble(
+  p = 1:100,
+  quantiles_empirical,
        quantiles_simulation, 
-       quantiles_yule) %>%
-  rename(`Quantiles obtained from simulation` = quantiles_simulation,
-         `Quantiles obtained from fitted Yule distribution` = quantiles_yule) %>%
-  pivot_longer(2:3) -> quantiles_long
+       quantiles_yule
+       ) %>%
+  mutate(quantiles_yule = quantiles_yule/max(quantiles_yule)*max(quantiles_empirical),
+         quantiles_simulation = quantiles_simulation/max(quantiles_simulation)*max(quantiles_empirical)) %>%
+  rename(`Simulation` = quantiles_simulation,
+         `Fitted Yule distribution` = quantiles_yule) %>%
+  pivot_longer(3:4) -> quantiles_long
 
 ggplot(quantiles_long, aes(x = quantiles_empirical, y = value, color = name)) +
          geom_point() +
          coord_fixed() +
-         theme(aspect.ratio = 1) 
-tibble(y =  quantiles_simulation, x = quantiles_empirical) %>%
-  
-  # mutate(y = y * sum(x) /
-  #          sum(y)) %>%
-  ggplot(aes(x, y)) +
-  geom_point() +
-  coord_fixed() +
-  theme(aspect.ratio = 1) # +
+         theme(aspect.ratio = 1) +
+  geom_abline(slope = 1) +
+  labs(x = "empirical quantiles",
+       y = "value (max-normalised)") +
+  theme_minimal(base_size = 13) +
+  scale_color_brewer(palette = "Set1") 
+
+# tibble(y =  quantiles_simulation, x = quantiles_empirical) %>%
+#   
+#   # mutate(y = y * sum(x) /
+#   #          sum(y)) %>%
+#   ggplot(aes(x, y)) +
+#   geom_point() +
+#   coord_fixed() +
+#   theme(aspect.ratio = 1) # +
   # geom_abline(slope = 1, intercept = 0)
 
 #### Histogram for empirical data
@@ -47,11 +69,15 @@ tibble(playcount = log(vertex_attr(similar_graph)$playcount)) %>%# View()
   mutate(playcount = ifelse(is.infinite(playcount), 0, playcount)) %>%
 ggplot(aes(x = playcount)) +
   geom_histogram() +
-  labs(x = "log(playcount)")
+  labs(x = "log(playcount)") +
+  theme_minimal(base_size = 13) +
+  scale_color_brewer(palette = "Set1")
 
 # Standard
 ggplot(tibble(playcount = vertex_attr(similar_graph)$playcount), aes(x = playcount)) +
-  geom_histogram(bins = 100)
+  geom_histogram(bins = 100) +
+  theme_minimal(base_size = 13) +
+  scale_color_brewer(palette = "Set1")
 
 #### Summary of empirical data (table)
 tibble(playcount = vertex_attr(similar_graph)$playcount) %>% 
@@ -68,9 +94,25 @@ tibble(playcount = vertex_attr(similar_graph)$playcount) %>%
 
 #### Stats tests table
 
+
+ks.test(playcount, simulation_playcount_scaled)
+kSamples::ad.test(playcount, simulation_playcount_scaled)
+
+
+# Yule
+ks.test(simulation_playcount_scaled, simulation_yule)
+kSamples::ad.test(simulation_playcount_scaled, simulation_yule)
+
+
+
+
 # MLE params, test statistic value and p-value
 
 
-#### qq plot with empirical vs pareto, yule and simulation
-
 #### gif of histograms from simulation
+
+# Okazało się mało ciekawe
+
+
+
+

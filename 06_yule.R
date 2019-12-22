@@ -119,7 +119,7 @@ qqplot(general_info$playcount, qYULE(ppoints(100000)))
 
 snowball_prob <- 0.95
 N_AGENTS <- 100000
-N_ARTISTS <- 100
+N_ARTISTS <- 10000
 
 # Params that fit well:
 # snowball_prob <- 0.95

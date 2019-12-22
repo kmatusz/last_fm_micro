@@ -30,7 +30,7 @@ similar_graph <-
 
 # Parameters of execution
 no_agents <- 10000
-no_steps <- 50
+no_steps <- 20
 snowball_prob <- 0.07
 method <- "similar"
 
