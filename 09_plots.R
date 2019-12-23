@@ -1,3 +1,5 @@
+
+#' Libraries, options
 library(gamlss.dist)
 library(tidyverse)
 library(igraph)
@@ -5,7 +7,9 @@ library(fitdistrplus)
 library(broom)
 options(scipen = 999)
 # install.packages("kSamples")
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
+#' Load data, scale
 load("data/simulation_results.Rdata")
 
 similar_graph <- results_list[[1]]
@@ -17,19 +21,21 @@ simulation_playcount_scaled <- simulation_playcount/normalize_by(simulation_play
 
 
 
-#### Fit yule
+#' Fit yule dist
 mle_yule <-
   fitdistrplus::mledist(vertex_attr(similar_graph)$playcount,
                         "YULE",
                         start = list("mu" = 1000))
 mle_yule$estimate # 1898.966 - słabo pasuje
 
+#' simulate Yule (long)
+set.seed(10)
 simulation_yule <-
   rYULE(9998, mu = mle_yule$estimate)
-
 simulation_yule_scaled <- simulation_yule/normalize_by(simulation_yule)*normalize_by(playcount)
 
-#### Quantile-quantile plot
+
+#' Quantile-quantile plot
 probs <- seq(0, 0.99, 0.01)
 quantiles_simulation <- quantile(simulation_playcount, probs = probs)
 quantiles_simulation <- as.numeric(quantiles_simulation)
@@ -61,7 +67,7 @@ ggplot(quantiles_long, aes(x = quantiles_empirical, y = value, color = name)) +
   scale_color_brewer(palette = "Set1")
 
 
-#### Pair plot 
+#' Pair plot 
 tibble(
   playcount = sort(playcount),
   simulation_playcount = sort(simulation_playcount_scaled),
@@ -82,8 +88,8 @@ ggplot(df_sorted_long, aes(x = playcount, y = value, color = name)) +
 
 
 
-#### Histogram for empirical data
-# log
+#' Histogram for empirical data
+#' logarithmic scale
 tibble(playcount = log(vertex_attr(similar_graph)$playcount)) %>%# View()
   mutate(playcount = ifelse(is.infinite(playcount), 0, playcount)) %>%
 ggplot(aes(x = playcount)) +
@@ -91,13 +97,8 @@ ggplot(aes(x = playcount)) +
   labs(x = "log(playcount)") +
   theme_minimal(base_size = 13)
 
-# Standard
-ggplot(tibble(playcount = vertex_attr(similar_graph)$playcount), aes(x = playcount)) +
-  geom_histogram(bins = 100) +
-  theme_minimal(base_size = 13) +
-  scale_color_brewer(palette = "Set1")
 
-#### Summary of empirical data (table)
+#' Summary of empirical data (table)
 tibble(playcount = vertex_attr(similar_graph)$playcount) %>% 
   summarise(`No. observations` = n(),
             `min.` = min(playcount),
@@ -107,21 +108,21 @@ tibble(playcount = vertex_attr(similar_graph)$playcount) %>%
             `75% quantile` = quantile(playcount, 0.75),
             max = max(playcount),
             sd = sd(playcount)) %>%
-  pivot_longer(everything()) 
+  pivot_longer(everything()) %>%
+  kableExtra::kable()
 
 
-#### Stats tests table
-
-
+#' Stats tests computation
+#' Simulation
 test_simulation_ks <- ks.test(playcount, simulation_playcount_scaled)
 test_simulation_ad <- kSamples::ad.test(playcount, simulation_playcount_scaled)
 
 
-# Yule
+#' Yule
 test_yule_ks <- ks.test(playcount, simulation_yule_scaled)
 test_yule_ad <- kSamples::ad.test(playcount, simulation_yule_scaled)
 
-
+#' K-S tidy
 test_simulation_ks %>%
   broom::tidy() %>%
   select(statistic, p.value) %>%
@@ -151,9 +152,10 @@ test_yule_ks %>%
   ) -> test_yule_ks_tidy
 
 rbind(test_simulation_ks_tidy,
-      test_yule_ks_tidy)
+      test_yule_ks_tidy) %>%
+  kableExtra::kable()
 
-
+#' A-D tidy
 enframe(test_simulation_ad$ad[1,] ) %>%
   pivot_wider(names_from = "name") %>%
   select(1, 3) %>%
@@ -194,7 +196,8 @@ enframe(test_yule_ad$ad[1,] ) %>%
   ) -> test_yule_ad_tidy
 
 rbind(test_simulation_ad_tidy,
-      test_yule_ad_tidy)
+      test_yule_ad_tidy) %>%
+  kableExtra::kable()
 
 #### gif of histograms from simulation
 
