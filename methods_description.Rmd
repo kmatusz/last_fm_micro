@@ -1,8 +1,8 @@
 ---
 title: "methods_desc"
 output:
-  html_document: default
   word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -45,13 +45,15 @@ R packages igraph, tidyverse, fitdistrplus, gamlss.dist were used.
 
 ### Results
 
-In all simulations using graph structure, constant number of agents and number of steps were used, set at 10 000 and 50, respectively. After 50 steps the distribution of playcounts was not changing substantially anymore. Probability of selecting random popular artist *p* was initially tested for p = 0.1, 0.2, ..., 1. After this procedure, quantile-quantile plot analysis have shown that reasonable p < 0.1.
+In all simulations using graph structure, constant number of agents and number of steps were used, set at 10 000 and 50, respectively. After 50 steps the distribution of playcounts was not changing substantially anymore. Probability of selecting random popular artist *p* was initially tested for p = 0.1, 0.2, ..., 1. After this procedure, quantile-quantile plot analysis has shown that reasonable p < 0.1.
 
 Value of parameter *mu* describing Yule distribution obtained through maximum likelihood estimation was 1898.96. 
 
-Table containing parameters of K-S test and Anderson-Darling are shown in the table. 
+Parameters of K-S test and Anderson-Darling are shown in the table. As can be seen, both tests reject the hyphotesis that an algorithm proposed above is generating the same distribution as empirical data. The same is true for testing against Yule distribution. In all 4 cases, p-value is close to 0. However, both using K-S and A-D test, the test statistics are higher for Yule distribution than for simulation. In both tests it means that a process proposed above has marginally better explanatory power.  
 
-As it can be seen from the qq-plot, the simulation results resemble empirical results closely. The difference in analyzed distributions lies in the tail - obtained playcounts differ from the empirical data. 
+As it can be seen from the qq-plot, the simulation results resemble empirical results closely. 
+
+The data obtained from 2 sources (simulation and Yule distribution random generation) were sorted and plotted against empirical data. As can be seen, simulation results present better fit to the data.
 
 Another interesting result is comparison with snowball process - probability of particular agents "attaching" to the main trend needed to reflect empirical distribution is at 0.95. For random graph walk it is only 0.07 . This means that even without strong drive for listening to popular music, there exists a mechanism (recommendation system), for which the distribution of popularity can be also obtained.
 

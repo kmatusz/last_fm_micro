@@ -18,8 +18,6 @@ tibble(
            sum(simulation_playcount)) -> df_sorted
 
 
-
-
 ggplot(df_sorted, aes(x = playcount, y = simulation_playcount)) +
   geom_point() +
   coord_fixed() +
