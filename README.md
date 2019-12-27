@@ -9,3 +9,4 @@ This repository contains analysis of last.fm artists data
 - 04_analysis.R - all analysis on clean datasets
 - 05_artist_network.R - analysis using artists similarities graph
 - 06_yule.R - testing yule distribution
+- **09... - simulations report**
