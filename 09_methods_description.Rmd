@@ -1,47 +1,55 @@
 ---
 title: "methods_desc"
 output:
-  word_document: default
+  word_document: 
+    reference_docx: micro_paper_MK.docx
   html_document: default
+  
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Dataset description
+
+The data used in this study was obtained using an open API provided by last.fm site. Last fm is a service in which users are able to record music played by them using different services, including Spotify, YouTube, Tidal and others.
+
+The study was restricted to artists with tag 'polish'. In total there are 17178 such artists. However, the API has limits for maximum calls for one information type, and thus data about 9998 artists was obtained. Available informations about each artist used in the study are:
+
+- Artist name
+- Names of 5 most similar artists
+- Number of times particular artist was played by all users (playcount)
+
+Names of similar artists were used to construct a directed graph of similarities between artists. To obtain completeness of the graph, names of artists not avaliable in the dataset were completely excluded from the analysis.
+
+Playcounts the table below describes the playcount distribution. As can be seen, mean of the distribution is much higher than the median, which indicates a big skew in the data. On the histogram dependent variable was logarithmed. Obtained symmetry of the graph indicates exponential distribution.
+
 ### Methods description
-As shown by ..., the yule distribution provides a pretty reasonable fit to CD sales data. 
 
-The yule distribution arises from an underlying *snowball* process, which is defined as follows:
+As shown by Chung and Cox (1994), the Yule distribution provides a pretty reasonable fit to CD sales data. This distribution arises from a process which is defined as follows:
 
-```
-For each agent:
-    - With probability p, go to random artist, with probabilities proportional to previous playcounts for given artist. This is the "snowball" part.
-    - With probability 1-p, go to random artist, with equal probabilities. This part is for introducing randomness, as with p=1 first chosen artist would get all the listeners.
-```
+For each subsequent agent:
 
-Fitting the yule distribution using MLE does not give any information about underlying p in this case. To obtain the estimate, we have simulated the process using 100 000 steps and 10 000 artists (same number as in the empirical data). 
+1. With probability *p*, go to random artist, with probabilities proportional to previous playcounts for given artist. This is often called the "snowball" part.
+2. With probability *1-p*, go to random artist, with equal probabilities. This part is for introducing randomness, as with *p=1* first chosen artist would get all the listeners.
 
-*Tutaj coś o tym dlaczego robimy to co robimy, do dopisania kiedy będziemy mieli całą podbudowę teoretyczną.*
+Improved algorithm proposed by us takes into account a structure of the similarities between artists provided by recommendation engine. It is defined as follows:
 
-Algorithm proposed by us is as follows:
-
-```
 1. For each agent randomly select a vertice of the graph (artist). Increment the playcount for each artist by number of agents who have chosen it.
 2. In next steps make each agent do one of the following actions:
-    - With probability p, go to random vertice, with probabilities proportional to previous playcounts for given vertice. This is the same as the "snowball" part in yule process.
-    - With probability 1-p, go to neighboring vertice (similar artist) to previously chosen one. If the artist from previous step does not have any neighboring vertice, go to random one (without weighting).
-3. For each vertice selected, increment the playcount for each artist by number of agents who have chosen it.
-```
+    - With probability *p*, go to random vertice, with probabilities proportional to previous playcounts for given vertice. This is the same as the "snowball" part in Yule process.
+    - With probability *1-p*, go to neighboring vertice (similar artist) to previously chosen one. If the artist from previous step does not have any neighboring vertice, go to random one (without any weighting).
+    - For each vertice selected, increment the playcount for each artist by number of agents who have chosen it.
+
 
 This simulation is designed to test if the recommendation system provided by last.fm site is contribution to some artists being exceptionally popular. An intuition behind this is that popular artists are more often recommended as similar to inspected one, as the popularity bias exists.
 
-Results of the simulations were then compared to empirical distribution of playcounts. Distributions were compared using quantile-quantile plots, empirical distribution being the base one. As a reference, two theoretical distributions were fitted using maximum-likelihood estimation. These were Yule distribution and Pareto distribution. Both of them are referenced by ... for obtaining reasonable estimation of stardom distribution.
+Results of the simulations were then compared to empirical distribution of playcounts. Distributions were compared using quantile-quantile plots, empirical distribution being the base one. As a reference, Yule distribution was fitted using maximum-likelihood estimation. Fitting the yule distribution using MLE does not give an information about underlying *p*. To obtain the estimate, we have simulated the above process using 100 000 steps and 10 000 artists (same number as in the empirical data). This distribution was used by Chung and Cox (1994) for obtaining reasonable estimation of stardom distribution.
 
-More formal tests of goodnness of fit to the dataset were also provided. A widely popular choice for comparing two arbitrary distributions is a Kolmorogov-Smirnof test. However, for this particular dataset important information is contained in the upper tail. For such distributions, Anderson-Darling test is more sufficient, and thus was also used.
+More formal tests of goodnness of fit to the dataset were also provided. A widely popular choice for comparing two arbitrary distributions is a Kolmorogov-Smirnof test. However, for this particular case (stardom modeling) important information is contained in the upper tail. For such distributions, Anderson-Darling test is more sufficient (Chung and Cox, 1994), and thus was also used.
 
-
-R packages igraph, tidyverse, fitdistrplus, gamlss.dist were used.
+In this study, R packages igraph, tidyverse, fitdistrplus, gamlss.dist were used (*dodać cytowania*).
 
 ### Results
 
@@ -49,16 +57,11 @@ In all simulations using graph structure, constant number of agents and number o
 
 Value of parameter *mu* describing Yule distribution obtained through maximum likelihood estimation was 1898.96. 
 
-Parameters of K-S test and Anderson-Darling are shown in the table. As can be seen, both tests reject the hyphotesis that an algorithm proposed above is generating the same distribution as empirical data. The same is true for testing against Yule distribution. In all 4 cases, p-value is close to 0. However, both using K-S and A-D test, the test statistics are higher for Yule distribution than for simulation. In both tests it means that a process proposed above has marginally better explanatory power.  
+Parameters of K-S test and Anderson-Darling are shown in the table. As can be seen, both tests reject the hyphotesis that an algorithm proposed above is generating the same distribution as empirical data. The same is true for testing against Yule distribution. In all 4 cases, p-value is close to 0. However, both using K-S and A-D test, the test statistics are higher for Yule distribution than for simulation. In both tests it means that a process proposed above has marginally better explanatory power.
 
-As it can be seen from the qq-plot, the simulation results resemble empirical results closely. 
+As it can be seen from the qq-plot, both the simulation results and fitted Yule distribution resemble empirical results closely. This plot does not contain top 1% quantile for clarity.  On the neighboring dot plot this quantile is more visible. The data obtained from 2 sources (simulation and Yule distribution) were sorted and plotted against empirical data. As can be seen, simulation results present better fit to the data. On both plots, dependent variable was normalized by dividing by the maximum of empirical playcount. 
 
-The data obtained from 2 sources (simulation and Yule distribution random generation) were sorted and plotted against empirical data. As can be seen, simulation results present better fit to the data.
-
-Another interesting result is comparison with snowball process - probability of particular agents "attaching" to the main trend needed to reflect empirical distribution is at 0.95. For random graph walk it is only 0.07 . This means that even without strong drive for listening to popular music, there exists a mechanism (recommendation system), for which the distribution of popularity can be also obtained.
-
-
-
+As for comparison with snowball process (from Yule distribution), the probability of particular agents "attaching" to the main trend needed to reflect empirical distribution is at 0.95. For random graph walk it is only 0.07. This means that even without strong drive for listening to popular music, there exists a mechanism (recommendation system), for which the distribution of popularity can be also obtained.
 
 
 

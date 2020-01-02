@@ -34,7 +34,9 @@ tibble(log_playcount = log(playcount)) %>%# View()
 ggplot(aes(x = log_playcount)) +
   geom_histogram(fill = "#377EB8") +
   labs(x = "log(playcount)") +
-  theme_minimal(base_size = 13)
+  theme_minimal(base_size = 17) -> histogram_playcount_log
+
+histogram_playcount_log
 ```
 
 Summary of empirical data (table)
@@ -51,7 +53,9 @@ tibble(playcount = vertex_attr(similar_graph)$playcount) %>%
             sd = sd(playcount)) %>%
   pivot_longer(everything()) %>%
   kableExtra::kable() %>%
-  kableExtra::kable_styling()
+  kableExtra::kable_styling() -> table_playcount_stats
+
+table_playcount_stats
 ```
 
 
@@ -99,18 +103,20 @@ tibble(
   pivot_longer(3:4) -> quantiles_long
 
 ggplot(quantiles_long, aes(x = quantiles_empirical, y = value, color = name)) +
-         geom_point() +
+         geom_point(size = 3, alpha = 0.7) +
          coord_fixed() +
          theme(aspect.ratio = 1) +
   geom_abline(slope = 1) +
   labs(x = "empirical quantiles (*10^4)",
        y = "value (max-normalised, *10^4)",
        color = "Type") +
-  theme_minimal(base_size = 13) +
+  theme_minimal(base_size = 17) +
   scale_color_brewer(palette = "Set1") +
-  scale_x_continuous(breaks = c(0, 250000, 500000, 750000, 1000000, 1250000, 1500000, 1750000), labels = function(x) x/10000) +
-  scale_y_continuous(breaks = c(0, 250000, 500000, 750000, 1000000, 1250000, 1500000, 1750000), labels = function(x) x/10000) +
-  theme(panel.grid.minor = element_blank())
+  scale_x_continuous(breaks = c(0, 250000, 500000, 750000, 1000000, 1250000, 1500000, 1950000), labels = function(x) x/10000) +
+  scale_y_continuous(breaks = c(0, 250000, 500000, 750000, 1000000, 1250000, 1500000, 1950000), labels = function(x) x/10000) +
+  theme(panel.grid.minor = element_blank()) -> qq_plot
+
+qq_plot
 ```
 
 Pair plot 
@@ -124,18 +130,20 @@ tibble(
   pivot_longer(2:3) -> df_sorted_long
 
 ggplot(df_sorted_long, aes(x = playcount, y = value, color = name)) +
-  geom_point() +
+  geom_point(size = 3, alpha = 0.7) +
   coord_fixed() +
   theme(aspect.ratio = 1) +
   geom_abline(slope = 1) +
-  labs(x = "empirical quantiles (*10^4)",
-       y = "value (max-normalised, *10^4)",
+  labs(x = "empirical value (*10^5)",
+       y = "value (max-normalised, *10^5)",
        color = "Type") +
-  theme_minimal(base_size = 13) +
+  theme_minimal(base_size = 17) +
   scale_color_brewer(palette = "Set1") +
-  scale_x_continuous(breaks = seq(0, 35000000, 5000000), labels = function(x) x/10000) +
-  scale_y_continuous(breaks = seq(0, 35000000, 5000000), labels = function(x) x/10000) +
-  theme(panel.grid.minor = element_blank())
+  scale_x_continuous(breaks = seq(0, 35000000, 5000000), labels = function(x) x/100000) +
+  scale_y_continuous(breaks = seq(0, 35000000, 5000000), labels = function(x) x/100000) +
+  theme(panel.grid.minor = element_blank()) -> paired_plot
+
+paired_plot
 ```
 
 
@@ -188,7 +196,9 @@ test_yule_ks %>%
 rbind(test_simulation_ks_tidy,
       test_yule_ks_tidy) %>%
   kableExtra::kable() %>%
-  kableExtra::kable_styling()
+  kableExtra::kable_styling() -> table_ks
+
+table_ks
 ```
 
 A-D tidy
@@ -236,8 +246,23 @@ enframe(test_yule_ad$ad[1,] ) %>%
 rbind(test_simulation_ad_tidy,
       test_yule_ad_tidy) %>%
   kableExtra::kable() %>%
-  kableExtra::kable_styling()
+  kableExtra::kable_styling() -> table_ad
 
+table_ad
+
+```
+
+
+```{r}
+save(
+  histogram_playcount_log,
+  table_playcount_stats,
+  qq_plot,
+  paired_plot,
+  table_ks,
+  table_ad,
+  file = "data/plots.Rdata"
+)
 ```
 
 
