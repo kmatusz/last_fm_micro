@@ -1,3 +1,11 @@
+---
+title: "09_plots.R"
+author: "Kamil Matuszelański"
+date: "2019-12-23"
+output:
+  word_output
+---
+
 Libraries, options
 
 ```{r }
@@ -70,6 +78,18 @@ mle_yule <-
 mle_yule$estimate # 1898.966 - słabo pasuje
 ```
 
+```{r}
+rho <- mle_yule$estimate/(mle_yule$estimate - 1)
+rho
+# yule_st <-
+#   fitdistrplus::fitdist(vertex_attr(similar_graph)$playcount,
+#                         "YULE",
+#                         start = list("mu" = 1000))
+# 
+# gof <- fitdistrplus::gofstat(yule_st)
+```
+
+
 simulate Yule (long)
 
 ```{r cache=TRUE}
@@ -118,6 +138,50 @@ ggplot(quantiles_long, aes(x = quantiles_empirical, y = value, color = name)) +
 
 qq_plot
 ```
+
+Ecdf plot
+
+```{r}
+probs <- seq(0, 0.99, 0.0001)
+quantiles_simulation <- quantile(simulation_playcount, probs = probs)
+quantiles_simulation <- as.numeric(quantiles_simulation)
+quantiles_empirical <- quantile(playcount, probs = probs)
+quantiles_yule <- qYULE(probs, mu = mle_yule$estimate)
+
+tibble(
+  quantiles_empirical,
+  quantiles_simulation, 
+  quantiles_yule
+) %>%
+  mutate(quantiles_yule = quantiles_yule/normalize_by(quantiles_yule)*normalize_by(quantiles_empirical),
+         quantiles_simulation = quantiles_simulation/normalize_by(quantiles_simulation)*normalize_by(quantiles_empirical)) %>%
+  rename(`Simulation` = quantiles_simulation,
+         `Fitted Yule distribution` = quantiles_yule,
+         `Empirical distribution` = quantiles_empirical) %>%
+  pivot_longer(1:3) -> quantiles_long
+
+
+
+ggplot(quantiles_long, aes(x = value, color = name)) +
+  stat_ecdf() + 
+  theme(aspect.ratio = 1) +
+  ylim(c(0.5, 1)) + 
+  labs(x = "value (max-normalised, *10^4)",
+       y = "p",
+       color = "Type") +
+  theme_minimal(base_size = 12) +
+  scale_color_brewer(palette = "Set1") +
+  scale_x_continuous(breaks = c(0, 250000, 500000, 750000, 1000000, 1250000, 1500000, 1950000), labels = function(x) x/10000) +
+  theme(panel.grid.minor = element_blank()) -> ecdf_plot
+
+ecdf_plot
+
+
+```
+
+
+
+
 
 Pair plot 
 
@@ -266,8 +330,3 @@ save(
 ```
 
 
----
-title: "09_plots.R"
-author: "Kamil Matuszelański"
-date: "2019-12-23"
----
